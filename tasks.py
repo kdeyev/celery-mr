@@ -23,6 +23,16 @@ def reduce(mapped):
     return {"count": count, "data": data}
 
 @app.task(acks_late=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5})
+def part_reduce(mapped):
+    """ Reduce worker """
+    data = 0
+    count = 0
+    for d in mapped:
+        data += d["data"]
+        count += d["count"]
+    return {"count": count, "data": data}
+
+@app.task(acks_late=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5})
 def map(data):
     """ Map worker """
     results = []
