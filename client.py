@@ -24,14 +24,22 @@ def get_work(chord_id):
     else:
         return {'status': 'pending', 'stage': 2}
 
-if __name__ == '__main__':
-    my_id = create_work(chunk_size=4)
+def wait_for_task(my_id):
+    print(f"Waiting for task {my_id}")
     
-    # start_worker()
-
     for i in range(100):
         time.sleep(1)
         results = get_work(my_id)
+        print(f"Task {my_id} status: {results['status']}")
         if results['status'] == 'success':
-            print(results)
-            break
+            return results
+        
+    return None 
+        
+if __name__ == '__main__':
+    my_id = create_work(chunk_size=4)
+    print(f"Task started {my_id}")
+    
+    results = wait_for_task(my_id)
+    
+    print(f"Task execution result {results}")

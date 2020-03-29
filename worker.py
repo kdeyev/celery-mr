@@ -9,7 +9,7 @@ def start_worker():
     worker = celery.bin.worker.worker(app=app)
 
     options = {
-        # 'loglevel': 'INFO',
+        'loglevel': 'INFO',
         'traceback': True,
         # "pool_cls": "solo", # single thread
         "pool_cls": "threads", # multithread

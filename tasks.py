@@ -6,9 +6,6 @@ import random
 import os
 import threading
 
-# https://www.distributedpython.com/2018/08/21/celery-4-windows/
-os.environ["FORKED_BY_MULTIPROCESSING"] = "1"
-
 app = Celery('tasks', backend='redis://localhost', broker='redis://localhost')
 
 @app.task(acks_late=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5})
