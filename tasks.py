@@ -21,7 +21,7 @@ def reduce(mapped):
     return {"count": count, "data": data}
 
 @app.task(acks_late=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5})
-def part_reduce(mapped):
+def partial_reduce(mapped):
     """ Reduce worker """
     data = 0
     count = 0
@@ -29,6 +29,25 @@ def part_reduce(mapped):
         data += d["data"]
         count += d["count"]
     return {"count": count, "data": data}
+
+DB =  {"count": 0, "data": 0}
+DB_LOCK = threading.Lock()
+
+@app.task(acks_late=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5})
+def db_reduce(mapped):
+    """ Reduce worker """
+    for d in mapped:
+        with DB_LOCK:
+            DB["data"] += d["data"]
+            DB["count"] += d["count"]
+
+@app.task(acks_late=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5})
+def get_db_result(mapped):
+    """ Reduce worker """
+    global DB
+    data = DB
+    DB = {"count": 0, "data": 0}
+    return data
 
 @app.task(acks_late=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5})
 def map(data):
