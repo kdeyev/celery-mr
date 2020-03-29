@@ -1,14 +1,20 @@
 import time
 import celery
+
 import tasks
+
 from toolz.itertoolz import partition_all, concat
+import random
 
 app = tasks.app
 
-def create_mr(elements_count, chunk_size):
+def generate_data(elements_count, chunk_size):
     # Generate input data data
-    data = partition_all(chunk_size, range(elements_count))
-
+    data = [(chunk, random.randrange(10000)) for chunk in range(elements_count)]
+    data = partition_all(chunk_size, data)
+    return data
+    
+def create_mr(data):
     # Cretate map tasks
     maps = (tasks.map.s(x) for x in data)
     
@@ -23,10 +29,7 @@ def create_mr(elements_count, chunk_size):
     
     return (mapper.id, reducer.id)
 
-def create_part_mr(elements_count, chunk_size):
-    # Generate input data data
-    data = partition_all(chunk_size, range(elements_count))
-
+def create_part_mr(data):
     # Cretate map tasks chaned with part reduce tasks
     maps = (celery.chain(tasks.map.s(x), tasks.part_reduce.s()) for x in data)
     # Create global reduce task
@@ -73,12 +76,14 @@ def wait_for_task(mapper_id, reducer_id):
     return None 
         
 if __name__ == '__main__':
-    mapper_id, reducer_id = create_mr(elements_count=10000,chunk_size=100)
+    data = list(generate_data(100000, 100))
+    
+    mapper_id, reducer_id = create_mr(data)
     print(f"MR task started {reducer_id}")
     results = wait_for_task(mapper_id, reducer_id)
     print(f"MR task execution result {results}")
     
-    mapper_id, reducer_id = create_part_mr(elements_count=1000,chunk_size=100)
+    mapper_id, reducer_id = create_part_mr(data)
     print(f"Part MR task started {reducer_id}")
     results = wait_for_task(mapper_id, reducer_id)
     print(f"Part MR task execution result {results}")

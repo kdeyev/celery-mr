@@ -2,8 +2,6 @@ from celery import Celery
 from celery import Celery, chord, chain
 from celery.utils.log import get_task_logger
 
-
-import random
 import os
 import threading
 
@@ -37,6 +35,6 @@ def map(data):
     """ Map worker """
     results = []
     logger.debug(f"{os.getpid()} - {threading.get_ident()}")
-    for chunk in data:
-        results.append({"chunk": chunk, "count": 1, "data": random.randrange(10000)})
+    for chunk, data in data:
+        results.append({"chunk": chunk, "count": 1, "data": data})
     return results
