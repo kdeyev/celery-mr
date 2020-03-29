@@ -30,7 +30,6 @@ def get_work(mapper_id, reducer_id):
     
     # GroupResult doesn't work properly with MongoDB
     # mapper = celery.result.GroupResult.restore(mapper_id)
-    # mapper = celery.result.GroupResult(mapper)
     # completed = mapper.completed_count()
     
     if reducer.ready():
