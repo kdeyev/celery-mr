@@ -4,6 +4,7 @@ from celery import Celery, chord, chain
 from toolz.itertoolz import partition_all, concat
 import random
 import os
+import threading
 
 # https://www.distributedpython.com/2018/08/21/celery-4-windows/
 os.environ["FORKED_BY_MULTIPROCESSING"] = "1"
@@ -27,6 +28,7 @@ def reduce(mapped):
 def map(data):
     """ Map worker """
     results = []
+    print(f"{os.getpid()} - {threading.get_ident()}")
     for chunk in data:
         results.append(sum(chunk))
     return results
