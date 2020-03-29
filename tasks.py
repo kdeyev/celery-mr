@@ -1,5 +1,6 @@
 from celery import Celery
 from celery import Celery, chord, chain
+from celery.utils.log import get_task_logger
 
 from toolz.itertoolz import partition_all, concat
 import random
@@ -8,41 +9,35 @@ import threading
 
 app = Celery('tasks', backend='redis://localhost', broker='redis://localhost')
 
-@app.task(acks_late=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5})
-def add(x, y):
-    return x + y
-
-@app.task(acks_late=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5})
-def process(chunk):
-    return {"chunks" : 1}
+logger = get_task_logger(__name__)
 
 @app.task(acks_late=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5})
 def reduce(mapped):
     """ Reduce worker """
-    return list(concat(mapped))
+    data = 0
+    count = 0
+    for chunk in mapped:
+        for d in chunk:
+            data += d["data"]
+            count += d["count"]
+    return {"count": count, "data": data}
 
 @app.task(acks_late=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5})
 def map(data):
     """ Map worker """
     results = []
-    print(f"{os.getpid()} - {threading.get_ident()}")
+    logger.debug(f"{os.getpid()} - {threading.get_ident()}")
     for chunk in data:
-        results.append(sum(chunk))
+        results.append({"chunk": chunk, "count": 1, "data": random.randrange(10000)})
     return results
 
 
 @app.task(acks_late=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5})
-def mapreduce(chunk_size):
+def mapreduce(elements_count, chunk_size):
     """ A long running task which splits up the input data to many workers """
-    # create some sample data for our summation function
-    data = []
-    for i in range(10000):
-        x = []
-        for j in range(random.randrange(10) + 5):
-            x.append(random.randrange(10000))
-        data.append(x)
+    data = partition_all(chunk_size, range(elements_count))
 
     # break up our data into chunks and create a dynamic list of workers
-    maps = (map.s(x) for x in partition_all(chunk_size, data))
+    maps = (map.s(x) for x in data)
     mapreducer = chord(maps)(reduce.s())
     return {'chord_id': mapreducer.id}

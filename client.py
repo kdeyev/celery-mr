@@ -4,9 +4,9 @@ import tasks
 
 app = tasks.app
 
-def create_work(chunk_size):
+def create_work(elements_count, chunk_size):
     """ A fast task for initiating our map function """
-    return tasks.mapreduce.delay(chunk_size).id
+    return tasks.mapreduce.delay(elements_count, chunk_size).id
 
 
 def get_work(chord_id):
@@ -32,12 +32,12 @@ def wait_for_task(my_id):
         results = get_work(my_id)
         print(f"Task {my_id} status: {results['status']}")
         if results['status'] == 'success':
-            return results
+            return results['results']
         
     return None 
         
 if __name__ == '__main__':
-    my_id = create_work(chunk_size=4)
+    my_id = create_work(elements_count=100000,chunk_size=100)
     print(f"Task started {my_id}")
     
     results = wait_for_task(my_id)
