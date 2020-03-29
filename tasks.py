@@ -7,7 +7,7 @@ import random
 import os
 import threading
 
-app = Celery('tasks', backend='redis://localhost', broker='redis://localhost')
+app = Celery('tasks', backend='mongodb://localhost', broker='mongodb://localhost')
 
 logger = get_task_logger(__name__)
 

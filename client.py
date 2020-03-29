@@ -26,9 +26,13 @@ def get_work(mapper_id, reducer_id):
     """ A fast task for checking our map result """
 
     reducer = app.AsyncResult(reducer_id)
-    mapper = celery.result.GroupResult.restore(mapper_id)
+    completed = 0
     
-    completed = mapper.completed_count()
+    # GroupResult doesn't work properly with MongoDB
+    # mapper = celery.result.GroupResult.restore(mapper_id)
+    # mapper = celery.result.GroupResult(mapper)
+    # completed = mapper.completed_count()
+    
     if reducer.ready():
         return {
             'status': 'success',
