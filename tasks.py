@@ -10,22 +10,20 @@ os.environ["FORKED_BY_MULTIPROCESSING"] = "1"
 
 app = Celery('tasks', backend='redis://localhost', broker='redis://localhost')
 
-@app.task
+@app.task(acks_late=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5})
 def add(x, y):
     return x + y
 
-
-@app.task
+@app.task(acks_late=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5})
 def process(chunk):
     return {"chunks" : 1}
 
-@app.task
+@app.task(acks_late=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5})
 def reduce(mapped):
     """ Reduce worker """
     return list(concat(mapped))
 
-
-@app.task
+@app.task(acks_late=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5})
 def map(data):
     """ Map worker """
     results = []
@@ -34,7 +32,7 @@ def map(data):
     return results
 
 
-@app.task
+@app.task(acks_late=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5})
 def mapreduce(chunk_size):
     """ A long running task which splits up the input data to many workers """
     # create some sample data for our summation function
