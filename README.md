@@ -16,6 +16,7 @@ and run with your brocker: \<brocker\> = redis or mongodb
 ```sh
 flower --port=5555 --broker=<brocker>://localhost
 ```
+open http://localhost:5555 in browser
 3. Install celery
 ```sh
 pip install celery

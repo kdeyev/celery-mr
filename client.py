@@ -29,8 +29,9 @@ def get_work(mapper_id, reducer_id):
     completed = 0
     
     # GroupResult doesn't work properly with MongoDB
-    # mapper = celery.result.GroupResult.restore(mapper_id)
-    # completed = mapper.completed_count()
+    mapper = celery.result.GroupResult.restore(mapper_id)
+    # mapper = celery.result.result_from_tuple([[mapper_id, None], [[task, None] for task in mapper]])
+    completed = mapper.completed_count()
     
     if reducer.ready():
         return {
@@ -53,7 +54,7 @@ def wait_for_task(mapper_id, reducer_id):
     return None 
         
 if __name__ == '__main__':
-    mapper_id, reducer_id = create_work(elements_count=100000,chunk_size=100)
+    mapper_id, reducer_id = create_work(elements_count=100,chunk_size=10)
     print(f"Task started {reducer_id}")
     
     results = wait_for_task(mapper_id, reducer_id)
