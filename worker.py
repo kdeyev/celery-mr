@@ -1,12 +1,13 @@
+import threading
 
-from celery import Celery
-import celery.bin.worker
-import tasks
-
-app = tasks.app
+from flask import Flask
+app = Flask(__name__)
 
 def start_worker():
-    worker = celery.bin.worker.worker(app=app)
+    import celery.bin.worker
+    import tasks
+
+    worker = celery.bin.worker.worker(app=tasks.app)
 
     options = {
         'loglevel': 'WARNING',
@@ -18,5 +19,12 @@ def start_worker():
 
     worker.run(**options)    
 
-if __name__ == "__main__":    
-    start_worker()
+@app.route('/')
+def login():
+    return 'Worker'
+
+if __name__ == "__main__": 
+    worker_thread = threading.Thread(target=start_worker)
+    worker_thread.start()
+    
+    app.run()
