@@ -1,4 +1,4 @@
-1. Run broker/backend
+# Run broker/backend
 Redis
 ```sh
 docker run --name some-redis -d redis
@@ -7,7 +7,7 @@ Mongo
 ```sh
 docker run --name some-mongo -d mongo
 ```
-2. Install/run Flower (optional)
+# Install/run Flower (optional)
 Install: flower
 ```sh
 pip install flower
@@ -18,17 +18,17 @@ flower --port=5555 --broker=<brocker>://localhost
 ```
 open http://localhost:5555 in browser
 
-3. Install celery
+# Install celery
 ```sh
 pip install celery
 ```
-4. Run worker
+# Run worker
 ```sh
 python worker.py
 ```
 Pay attention: backend is herdcoded in tasks.py
-5. Run client:
+# Run client:
 ```sh
 python client.py
 ```
-6. Have fun
+# Have fun
