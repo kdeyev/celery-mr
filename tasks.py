@@ -50,10 +50,18 @@ def get_db_result(mapped):
     return data
 
 @app.task(acks_late=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5})
-def map(data):
+def map_bulk(data):
     """ Map worker """
     results = []
     logger.debug(f"{os.getpid()} - {threading.get_ident()}")
     for chunk, data in data:
         results.append({"chunk": chunk, "count": 1, "data": data})
     return results
+
+
+@app.task(acks_late=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5})
+def map_chunk(chunk):
+    """ Map worker """
+    logger.debug(f"{os.getpid()} - {threading.get_ident()}")
+    (chunk, data) = chunk
+    return {"chunk": chunk, "count": 1, "data": data}
